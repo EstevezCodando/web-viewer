@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Visualizador AR</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+  <h1 id="titulo-modelo">Modelo</h1>
+
+  <model-viewer id="visualizador"
+                ar
+                auto-rotate
+                camera-controls
+                style="width: 100%; height: 80vh;">
+  </model-viewer>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const src = params.get("src");
+    const nome = params.get("nome") || "Modelo 3D";
+    document.getElementById("titulo-modelo").textContent = nome;
+    document.getElementById("visualizador").setAttribute("src", src);
+  </script>
+</body>
+</html>
