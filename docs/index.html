@@ -40,17 +40,20 @@
     <h1>Visualizador 3D Fjordi Scene</h1>
 
     <model-viewer
-      id="modelViewer"
       src="modelos/FjordiSceneOutput2049.glb"
       alt="Cena Fjordi em 3D"
       ar
       ar-modes="scene-viewer webxr quick-look"
-      camera-controls
-      auto-rotate
+      ar-scale="fixed"
+      placement="floor"
       environment-image="neutral"
-      ar-scale="auto"
-      ar-status="not-presenting">
+      exposure="1"
+      auto-rotate
+      camera-controls
+      shadow-intensity="1"
+      scale="0.01 0.01 0.01">
     </model-viewer>
+
 
     <!-- Botão AR exibido automaticamente pelo model-viewer -->
     <button class="ar-button" id="ar-launcher" onclick="document.querySelector('#modelViewer').activateAR();">
