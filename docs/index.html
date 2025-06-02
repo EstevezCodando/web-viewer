@@ -1,69 +1,67 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Fjordi AR</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fjordi AR</title>
+  <style>html,body{margin:0;height:100%;overflow:hidden}</style>
 
-  <!-- Import map resolve "three", seus addons e o MindAR-Three -->
   <script type="importmap">
   {
     "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three":  "https://unpkg.com/three@0.160.0/build/three.module.js",
       "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
+      "mindar": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
     }
   }
   </script>
-
-  <!-- CSS mínimo -->
-  <style>html,body{margin:0;height:100%;overflow:hidden}</style>
 </head>
+
 <body>
-  <canvas id="ar"></canvas>
+  <div id="ar-container"></div>
 
   <script type="module">
-    import * as THREE from "three";
-    import { GLTFLoader }    from "three/addons/loaders/GLTFLoader.js";
-    import { MindARThree }   from "mindar-image-three";
+    import * as THREE           from "three";
+    import { GLTFLoader }       from "three/addons/loaders/GLTFLoader.js";
+    import { MindARThree }      from "mindar";
 
-    // ─── Configuração do MindAR ──────────────────────────────────────────────
     const mindar = new MindARThree({
-      container:      document.querySelector("#ar"),
+      container: document.querySelector("#ar-container"),
       imageTargetSrc: "./assets/target.mind"
     });
-    const {renderer, scene, camera} = mindar;
+    const { renderer, scene, camera } = mindar;
     renderer.setClearColor(0x000000, 0);
 
-    // luz básica
     scene.add(new THREE.HemisphereLight(0xffffff,0xbbbbff,1));
 
-    // ancora no 1º alvo
     const anchor = mindar.addAnchor(0);
 
-    // carrega o GLB
-    const loader = new GLTFLoader();
-    loader.load("./modelos/FjordiSceneOutput2049.glb",
-      (gltf)=>{                               // sucesso
-        const modelo = gltf.scene;
-        modelo.scale.set(0.008,0.008,0.008);  // ajuste fino
-        anchor.group.add(modelo);
+    new GLTFLoader().load(
+      "./modelos/FjordiSceneOutput2049.glb",
+      (gltf) => {
+        const m = gltf.scene;
+        m.scale.set(0.008,0.008,0.008);
+        anchor.group.add(m);
       },
-      undefined,                              // onProgress (opcional)
-      (err)=>console.error("Falha GLB:",err)  // onError
+      undefined,
+      (err) => console.error("Erro GLB:", err)
     );
 
-    // inicia somente após gesto do usuário (permite acesso à câmera)
-    const startAR = async ()=>{
-      await mindar.start();
-      renderer.setAnimationLoop(()=>renderer.render(scene,camera));
+    // inicia após clique para satisfazer a política de permissão
+    const start = async () => {
+      try {
+        await mindar.start();
+        renderer.setAnimationLoop(() => renderer.render(scene, camera));
+      } catch (e) {
+        console.error("MindAR falhou:", e);
+        alert("Erro ao iniciar AR. Veja o console.");
+      }
     };
 
-    const btn = Object.assign(document.createElement("button"),{
-      textContent:"Iniciar AR",
-      style:"position:absolute;margin:20px;padding:10px 20px;font-size:1rem;z-index:10;border:none;border-radius:8px;cursor:pointer"
+    const btn = Object.assign(document.createElement("button"), {
+      textContent: "Iniciar AR",
+      style: "position:absolute;top:20px;left:20px;padding:10px 18px;font-size:1rem;z-index:10;border:none;border-radius:8px;cursor:pointer"
     });
-    btn.onclick=()=>{btn.remove();startAR();};
+    btn.onclick = () => { btn.remove(); start(); };
     document.body.appendChild(btn);
   </script>
 </body>
