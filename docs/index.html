@@ -12,27 +12,51 @@
         margin: 0;
         padding: 20px;
       }
+
       model-viewer {
         width: 100%;
         height: 600px;
         background-color: #fff;
         border: 1px solid #ccc;
       }
+
+      .ar-button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        margin-top: 12px;
+        cursor: pointer;
+      }
+
+      .ar-button:active {
+        background-color: #0056b3;
+      }
     </style>
   </head>
   <body>
     <h1>Visualizador 3D Fjordi Scene</h1>
 
-    <model-viewer 
-      src="modelos/FjordiSceneOutput2049.glb" 
+    <model-viewer
+      id="modelViewer"
+      src="modelos/FjordiSceneOutput2049.glb"
       alt="Cena Fjordi em 3D"
       ar
       ar-modes="scene-viewer webxr quick-look"
-      environment-image="neutral"
+      camera-controls
       auto-rotate
-      camera-controls>
+      environment-image="neutral"
+      ar-scale="auto"
+      ar-status="not-presenting">
     </model-viewer>
 
-    <p>Use um celular para ativar a Realidade Aumentada.</p>
+    <!-- Botão AR exibido automaticamente pelo model-viewer -->
+    <button class="ar-button" id="ar-launcher" onclick="document.querySelector('#modelViewer').activateAR();">
+      Visualizar em Realidade Aumentada
+    </button>
+
+    <p>Use um celular com suporte AR para visualizar no ambiente real.</p>
   </body>
 </html>
