@@ -1,65 +1,55 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <title>WebAR Fjordi Scene</title>
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <title>AR com marcador (MindAR)</title>
     <style>
-      body {
-        font-family: sans-serif;
-        background-color: #f0f0f0;
-        text-align: center;
+      html, body {
         margin: 0;
-        padding: 20px;
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
       }
-
-      model-viewer {
-        width: 100%;
-        height: 600px;
-        background-color: #fff;
-        border: 1px solid #ccc;
-      }
-
-      .ar-button {
-        background-color: #007bff;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        margin-top: 12px;
-        cursor: pointer;
-      }
-
-      .ar-button:active {
-        background-color: #0056b3;
+      #ar-container {
+        width: 100vw;
+        height: 100vh;
       }
     </style>
   </head>
   <body>
-    <h1>Visualizador 3D Fjordi Scene</h1>
+    <div id="ar-container"></div>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-    <model-viewer
-      src="modelos/FjordiSceneOutput2049.glb"
-      alt="Cena Fjordi em 3D"
-      ar
-      ar-modes="scene-viewer webxr quick-look"
-      ar-scale="fixed"
-      placement="floor"
-      environment-image="neutral"
-      exposure="1"
-      auto-rotate
-      camera-controls
-      shadow-intensity="1"
-      scale="0.01 0.01 0.01">
-    </model-viewer>
+    <script type="module">
+      
+      import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+      import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
+      import { MindARThree } from 'https://cdn.jsdelivr.net/gh/KenshiroSoh/mind-ar-js-esm@1.1.4/dist/mindar-image-three.module.js';
 
+      document.addEventListener("DOMContentLoaded", async () => {
+        const mindarThree = new MindARThree({
+          container: document.querySelector("#ar-container"),
+          imageTargetSrc: "./assets/target.mind"
+        });
 
-    <!-- Botão AR exibido automaticamente pelo model-viewer -->
-    <button class="ar-button" id="ar-launcher" onclick="document.querySelector('#modelViewer').activateAR();">
-      Visualizar em Realidade Aumentada
-    </button>
+        const { renderer, scene, camera } = mindarThree;
 
-    <p>Use um celular com suporte AR para visualizar no ambiente real.</p>
+        const anchor = mindarThree.addAnchor(0);
+        const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+        scene.add(light);
+
+        const loader = new GLTFLoader();
+        loader.load("./modelos/FjordiSceneOutput2049.glb", (gltf) => {
+          const modelo = gltf.scene;
+          modelo.scale.set(0.01, 0.01, 0.01);
+          anchor.group.add(modelo);
+        });
+
+        await mindarThree.start();
+        renderer.setAnimationLoop(() => {
+          renderer.render(scene, camera);
+        });
+      });
+    </script>
   </body>
 </html>
