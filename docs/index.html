@@ -1,68 +1,64 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Fjordi AR</title>
-  <style>html,body{margin:0;height:100%;overflow:hidden}</style>
-
-  <script type="importmap">
-  {
-    "imports": {
-      "three":  "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-      "mindar": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
-    }
-  }
-  </script>
+    <title>Carta Topográfica AR - 3D Teste Open</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        .arjs-loader {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .arjs-loader div {
+            text-align: center;
+            font-size: 1.25em;
+            color: white;
+        }
+    </style>
 </head>
+<body style="margin : 0px; overflow: hidden;">
+    <div class="arjs-loader">
+        <div>Carregando, por favor aguarde...</div>
+    </div>
 
-<body>
-  <div id="ar-container"></div>
+    <a-scene
+        vr-mode-ui="enabled: false;"
+        renderer="logarithmicDepthBuffer: true; antialias: true; colorManagement: true;"
+        embedded
+        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    >
+        <a-marker type="barcode" value="3dtesteopen">
+            <a-entity
+                gltf-model="url(modelos/scene.gltf)"
+                scale="0.05 0.05 0.05"
+                position="0 0 0"
+                rotation="-90 0 0"
+                animation-mixer
+            ></a-entity>
+        </a-marker>
 
-  <script type="module">
-    import * as THREE           from "three";
-    import { GLTFLoader }       from "three/addons/loaders/GLTFLoader.js";
-    import { MindARThree }      from "mindar";
+        <a-entity camera></a-entity>
+    </a-scene>
 
-    const mindar = new MindARThree({
-      container: document.querySelector("#ar-container"),
-      imageTargetSrc: "./assets/target.mind"
-    });
-    const { renderer, scene, camera } = mindar;
-    renderer.setClearColor(0x000000, 0);
-
-    scene.add(new THREE.HemisphereLight(0xffffff,0xbbbbff,1));
-
-    const anchor = mindar.addAnchor(0);
-
-    new GLTFLoader().load(
-      "./modelos/FjordiSceneOutput2049.glb",
-      (gltf) => {
-        const m = gltf.scene;
-        m.scale.set(0.008,0.008,0.008);
-        anchor.group.add(m);
-      },
-      undefined,
-      (err) => console.error("Erro GLB:", err)
-    );
-
-    // inicia após clique para satisfazer a política de permissão
-    const start = async () => {
-      try {
-        await mindar.start();
-        renderer.setAnimationLoop(() => renderer.render(scene, camera));
-      } catch (e) {
-        console.error("MindAR falhou:", e);
-        alert("Erro ao iniciar AR. Veja o console.");
-      }
-    };
-
-    const btn = Object.assign(document.createElement("button"), {
-      textContent: "Iniciar AR",
-      style: "position:absolute;top:20px;left:20px;padding:10px 18px;font-size:1rem;z-index:10;border:none;border-radius:8px;cursor:pointer"
-    });
-    btn.onclick = () => { btn.remove(); start(); };
-    document.body.appendChild(btn);
-  </script>
+    <script>
+        // Esconde a tela de carregamento quando a cena AR estiver pronta
+        document.querySelector('a-scene').addEventListener('loaded', function () {
+            const loader = document.querySelector('.arjs-loader');
+            if (loader) {
+                loader.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
