@@ -51,14 +51,27 @@ async function iniciarAR() {
 
     // --- Carregar o modelo topográfico ---
     // IMPORTANTE: Certifique-se que o modelo 'carta_topografica.glb' está na pasta 'assets'.
-    updateFeedback('3/5 - Carregando modelo 3D (carta_topografica.glb)...');
-    const loader = new GLTFLoader();
-    const gltf = await loader.loadAsync('./assets/carta_topografica.glb').catch(err => {
-        throw new Error(`Falha ao carregar o modelo GLB: ${err.message}`);
-    });
+   // updateFeedback('3/5 - Carregando modelo 3D (carta_topografica.glb)...');
+   // const loader = new GLTFLoader();
+   // const gltf = await loader.loadAsync('./assets/carta_topografica.glb').catch(err => {
+   //     throw new Error(`Falha ao carregar o modelo GLB: ${err.message}`);
+   // });
+
+    // const modeloScene = gltf.scene;
+   // updateFeedback('Modelo 3D carregado.');
+   // +++ CÓDIGO DE TESTE COM UM CUBO +++
+    updateFeedback('3/5 - Criando objeto de teste (cubo)...');
+    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2); // Um cubo de 20cm
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 }); // Cor verde
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.set(0, 0.1, 0); // Posição relativa à âncora (um pouco para cima)
+    const modeloScene = cube; // Use o cubo como o modelo
+    updateFeedback('Objeto de teste criado.');
+    // +++ FIM DO CÓDIGO DE TESTE +++
+
+   
     
-    const modeloScene = gltf.scene;
-    updateFeedback('Modelo 3D carregado.');
+  
 
     // Ajustes no modelo (escala, posição, rotação)
     // Estes valores dependem de como seu modelo foi exportado.
