@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Carta Topográfica AR - 3D Teste Open</title>
+    <title>Carta Topográfica AR - Debug</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+
     <style>
-        body { margin: 0; overflow: hidden; }
+        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
         .arjs-loader {
             height: 100%;
             width: 100%;
@@ -25,25 +26,83 @@
             font-size: 1.25em;
             color: white;
         }
+        #debug-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 100;
+            font-size: 0.9em;
+            max-width: 80%;
+        }
+        #debug-panel p { margin: 5px 0; }
+        .buttons-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .buttons-container button {
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .buttons-container button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body style="margin : 0px; overflow: hidden;">
     <div class="arjs-loader">
-        <div>Carregando, por favor aguarde...</div>
+        <div>Carregando AR... Por favor, aguarde.</div>
+    </div>
+
+    <div class="buttons-container">
+        <button id="btn-scan-qr">Iniciar/Verificar Leitura QR</button>
+        <button id="btn-toggle-model" disabled>Alternar Visibilidade Modelo</button>
+        <button id="btn-log-state">Log Estado no Console</button>
+    </div>
+
+    <div id="debug-panel">
+        <p id="status-message">Status: Inicializando...</p>
+        <p>QR Code Esperado: <strong>3dtesteopen</strong></p>
+        <p>Modelo: <strong>modelos/scene.gltf</strong></p>
     </div>
 
     <a-scene
+        id="ar-scene"
         vr-mode-ui="enabled: false;"
         renderer="logarithmicDepthBuffer: true; antialias: true; colorManagement: true;"
         embedded
-        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        arjs="
+            trackingMethod: best;
+            sourceType: webcam;
+            debugUIEnabled: true;
+            detectionMode: mono_and_matrix;
+            matrixCodeType: 3x3;
+        "
     >
-        <a-marker type="barcode" value="3dtesteopen">
+        <a-marker
+            id="qr-marker"
+            type="barcode"
+            value="3dtesteopen"
+        >
             <a-entity
+                id="meu-modelo-3d"
                 gltf-model="url(modelos/scene.gltf)"
                 scale="0.05 0.05 0.05"
                 position="0 0 0"
                 rotation="-90 0 0"
+                visible="false"
                 animation-mixer
             ></a-entity>
         </a-marker>
@@ -52,12 +111,88 @@
     </a-scene>
 
     <script>
-        // Esconde a tela de carregamento quando a cena AR estiver pronta
-        document.querySelector('a-scene').addEventListener('loaded', function () {
-            const loader = document.querySelector('.arjs-loader');
-            if (loader) {
-                loader.style.display = 'none';
+        window.addEventListener('DOMContentLoaded', () => {
+            const sceneEl = document.querySelector('#ar-scene');
+            const markerEl = document.querySelector('#qr-marker');
+            const modelEl = document.querySelector('#meu-modelo-3d');
+            const statusMessageEl = document.querySelector('#status-message');
+            const btnScanQr = document.querySelector('#btn-scan-qr');
+            const btnToggleModel = document.querySelector('#btn-toggle-model');
+            const btnLogState = document.querySelector('#btn-log-state');
+            const loaderEl = document.querySelector('.arjs-loader');
+
+            function updateStatus(message) {
+                console.log(`[AR STATUS] ${message}`);
+                statusMessageEl.textContent = `Status: ${message}`;
             }
+
+            // Esconde o loader quando a cena AR estiver pronta
+            sceneEl.addEventListener('loaded', () => {
+                if (loaderEl) loaderEl.style.display = 'none';
+                updateStatus('Cena AR carregada. Aponte para o QR Code.');
+            });
+
+            // Lidar com erros de carregamento do modelo GLTF
+            modelEl.addEventListener('model-error', (e) => {
+                updateStatus(`ERRO ao carregar modelo: ${e.detail.src}`);
+                console.error('Erro no modelo GLTF:', e.detail);
+            });
+            modelEl.addEventListener('model-loaded', () => {
+                updateStatus('Modelo 3D carregado com sucesso no marcador (inicialmente invisível).');
+                // Não torna visível aqui, espera o markerFound
+            });
+
+
+            // Eventos do Marcador
+            markerEl.addEventListener('markerFound', () => {
+                updateStatus('QR Code "3dtesteopen" ENCONTRADO!');
+                modelEl.setAttribute('visible', 'true');
+                btnToggleModel.disabled = false;
+                btnToggleModel.textContent = 'Esconder Modelo';
+            });
+
+            markerEl.addEventListener('markerLost', () => {
+                updateStatus('QR Code "3dtesteopen" PERDIDO.');
+                modelEl.setAttribute('visible', 'false');
+                btnToggleModel.textContent = 'Mostrar Modelo (após reencontrar)';
+                // btnToggleModel.disabled = true; // Opcional: desabilitar se o marcador for perdido
+            });
+
+            // Funcionalidade dos Botões
+            btnScanQr.addEventListener('click', () => {
+                updateStatus('Verificando leitura do QR Code... Aponte a câmera.');
+                // AR.js já está escaneando. Este botão é mais para feedback do usuário.
+            });
+
+            btnToggleModel.addEventListener('click', () => {
+                if (!markerEl.object3D.visible) {
+                     updateStatus('QR Code não detectado. Não é possível alternar modelo.');
+                     alert('O QR Code precisa estar visível para mostrar/esconder o modelo.');
+                     return;
+                }
+                const isVisible = modelEl.getAttribute('visible');
+                modelEl.setAttribute('visible', !isVisible);
+                updateStatus(`Visibilidade do modelo alternada para: ${!isVisible}`);
+                btnToggleModel.textContent = !isVisible ? 'Esconder Modelo' : 'Mostrar Modelo';
+            });
+
+            btnLogState.addEventListener('click', () => {
+                console.log('--- ESTADO ATUAL AR ---');
+                console.log('Cena AR:', sceneEl);
+                console.log('Elemento Marcador:', markerEl);
+                console.log('Marcador visível (object3D.visible):', markerEl.object3D.visible);
+                console.log('Elemento Modelo:', modelEl);
+                console.log('Modelo visível (attribute):', modelEl.getAttribute('visible'));
+                console.log('Posição do Modelo:', modelEl.getAttribute('position'));
+                console.log('Escala do Modelo:', modelEl.getAttribute('scale'));
+                console.log('Rotação do Modelo:', modelEl.getAttribute('rotation'));
+                console.log('-----------------------');
+                alert('Estado atual registrado no console do navegador (F12).');
+                updateStatus('Estado atual registrado no console.');
+            });
+
+            // Estado inicial
+            updateStatus('Aguardando carregamento da cena AR...');
         });
     </script>
 </body>
