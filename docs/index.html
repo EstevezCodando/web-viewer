@@ -37,11 +37,30 @@
       color: #ffdddd; /* Vermelho claro para erros */
       font-weight: bold;
     }
-    #feedback-container .success {
+    #feedback-container .success { /* Not used in JS, but good to have */
       color: #ddffdd; /* Verde claro para sucesso */
+    }
+    #startButton {
+      padding: 12px 25px;
+      font-size: 1.2em;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    #startButton:hover {
+      background-color: #0056b3;
     }
     /* Esconde o container de feedback quando a classe 'hidden' é adicionada */
     #feedback-container.hidden {
+        display: none;
+    }
+    .initial-prompt { /* Class for elements to hide after start button click */
+        display: block; /* Or initial display type */
+    }
+    .initial-prompt.hidden {
         display: none;
     }
   </style>
@@ -59,8 +78,12 @@
 </head>
 <body>
   <div id="feedback-container">
-    <p id="feedback-message">🔄 Carregando e iniciando a câmera...</p>
-    <p style="font-size: 0.8em;">Por favor, conceda permissão para usar a câmera, se solicitado.</p>
+    <div id="initial-prompt-elements" class="initial-prompt">
+      <p>Clique no botão abaixo para iniciar a experiência AR.</p>
+      <button id="startButton">🚀 Iniciar AR</button>
+      <p style="font-size: 0.8em;">Por favor, conceda permissão para usar a câmera, se solicitado, após clicar em iniciar.</p>
+    </div>
+    <p id="feedback-message">🔄 Aguardando início...</p>
   </div>
 
   <script type="module" src="main.js"></script>

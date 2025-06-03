@@ -2,10 +2,12 @@
 import { MindARThree } from 'mind-ar-image-three';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
- 
+
 // Elementos do DOM para feedback
 const feedbackContainer = document.getElementById('feedback-container');
 const feedbackMessage = document.getElementById('feedback-message');
+const startButton = document.getElementById('startButton');
+const initialPromptElements = document.getElementById('initial-prompt-elements');
 
 function updateFeedback(message, isError = false) {
   if (feedbackMessage) {
@@ -21,20 +23,18 @@ function updateFeedback(message, isError = false) {
 
 async function iniciarAR() {
   try {
+    // Hide initial prompt and button
+    if (initialPromptElements) initialPromptElements.classList.add('hidden');
+    feedbackMessage.textContent = '🔄 Carregando e iniciando a câmera...'; // Initial message when AR starts
+
     updateFeedback('1/5 - Inicializando MindAR...');
-    // --- Inicialização do MindAR ---
-    // O container é o body, mas o MindAR criará seu próprio canvas
     const mindarThree = new MindARThree({
       container: document.body,
-      // IMPORTANTE: 'imageTargetSrc' aponta para um arquivo .mind compilado.
-      // Você DEVE gerar este arquivo a partir da sua imagem de QR Code (ou outra imagem alvo)
-      // usando o compilador online do MindAR: https://hiukim.github.io/mind-ar-js-doc/tools/compile
-      // Coloque o arquivo 'qrcode.mind' (ou o nome que você der) na pasta 'assets'.
-      imageTargetSrc: './assets/qrcode.mind', // Ex: se o seu QR Code se chama 'qrcode.png', compile-o para 'qrcode.mind'
-      maxTrack: 1, // Rastrear apenas 1 alvo por vez
-      filterMinCF: 0.001, // Parâmetros para suavizar o rastreamento (ajuste conforme necessário)
+      imageTargetSrc: './assets/qrcode.mind',
+      maxTrack: 1,
+      filterMinCF: 0.001,
       filterBeta: 0.01,
-      // uiLoading: "yes", // Pode usar o UI de loading padrão do MindAR se preferir
+      // uiLoading: "yes", // You can enable MindAR's built-in UI if preferred
       // uiScanning: "yes",
       // uiError: "yes"
     });
@@ -42,60 +42,57 @@ async function iniciarAR() {
     const { renderer, scene, camera } = mindarThree;
     updateFeedback('2/5 - Configurando cena 3D...');
 
-    // --- Iluminação ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Luz ambiente suave
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8); // Luz direcional para sombras e destaques
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(5, 10, 7.5);
     scene.add(directionalLight);
 
-    // --- Carregar o modelo topográfico ---
-    // IMPORTANTE: Certifique-se que o modelo 'carta_topografica.glb' está na pasta 'assets'.
-   // updateFeedback('3/5 - Carregando modelo 3D (carta_topografica.glb)...');
-   // const loader = new GLTFLoader();
-   // const gltf = await loader.loadAsync('./assets/carta_topografica.glb').catch(err => {
-   //     throw new Error(`Falha ao carregar o modelo GLB: ${err.message}`);
-   // });
-
-    // const modeloScene = gltf.scene;
-   // updateFeedback('Modelo 3D carregado.');
-   // +++ CÓDIGO DE TESTE COM UM CUBO +++
+    // --- CÓDIGO DE TESTE COM UM CUBO ---
     updateFeedback('3/5 - Criando objeto de teste (cubo)...');
-    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2); // Um cubo de 20cm
-    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 }); // Cor verde
+    const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
     const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(0, 0.1, 0); // Posição relativa à âncora (um pouco para cima)
-    const modeloScene = cube; // Use o cubo como o modelo
+    // cube.position.set(0, 0.1, 0); // Posição relativa à âncora (um pouco para cima) -> Adjust after anchoring
+    const modeloScene = cube;
     updateFeedback('Objeto de teste criado.');
-    // +++ FIM DO CÓDIGO DE TESTE +++
+    // --- FIM DO CÓDIGO DE TESTE ---
 
-   
+    /*
+    // --- Carregar o modelo topográfico ---
+    updateFeedback('3/5 - Carregando modelo 3D (carta_topografica.glb)...');
+    const loader = new GLTFLoader();
+    let modeloScene;
+    try {
+      const gltf = await loader.loadAsync('./assets/carta_topografica.glb');
+      modeloScene = gltf.scene;
+      updateFeedback('Modelo 3D carregado.');
+    } catch (err) {
+      // throw new Error(`Falha ao carregar o modelo GLB: ${err.message}`); // This would be caught by the outer try-catch
+      updateFeedback(`ERRO AO CARREGAR MODELO: ${err.message}. Usando cubo de fallback.`, true);
+      // Fallback to cube if model loading fails
+      const fallbackGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+      const fallbackMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 }); // Red for error
+      modeloScene = new THREE.Mesh(fallbackGeometry, fallbackMaterial);
+    }
+    */
     
-  
-
     // Ajustes no modelo (escala, posição, rotação)
-    // Estes valores dependem de como seu modelo foi exportado.
-    // A escala 0.01 pode ser muito pequena. Teste e ajuste.
-    modeloScene.scale.set(0.1, 0.1, 0.1); // Aumentei um pouco a escala para teste inicial
-    modeloScene.position.set(0, 0, 0); // Posição relativa à âncora
-    modeloScene.rotation.x = -Math.PI / 2; // Deita o mapa (comum para modelos do Blender)
+    modeloScene.scale.set(0.1, 0.1, 0.1);
+    modeloScene.position.set(0, 0, 0); // Posição relativa à âncora (será [0,0,0] do target)
+                                      // Se quiser que o cubo fique um pouco acima do target, ajuste aqui, ex: modeloScene.position.set(0, 0.1, 0);
+    modeloScene.rotation.x = -Math.PI / 2; // Deita o mapa
 
-    // --- Âncora ---
-    // O '0' refere-se ao primeiro alvo (target) definido no seu arquivo .mind.
-    // Se o seu arquivo .mind tiver múltiplos alvos, você usaria o índice correspondente.
     const anchor = mindarThree.addAnchor(0);
-    anchor.group.add(modeloScene); // Adiciona a cena do modelo ao grupo da âncora
+    anchor.group.add(modeloScene); // Adiciona o modelo (cubo ou GLTF) ao grupo da âncora
 
-    // Opcional: Adicionar um listener para quando o alvo é encontrado/perdido
     anchor.onTargetFound = () => {
       updateFeedback('Alvo (QR Code) encontrado!', false);
       console.log("Alvo encontrado");
-      // Você pode adicionar animações ou outras lógicas aqui
     }
     anchor.onTargetLost = () => {
       updateFeedback('Alvo (QR Code) perdido.', false);
       console.log("Alvo perdido");
-      // Você pode pausar animações ou esconder elementos aqui
     }
     
     updateFeedback('4/5 - Iniciando motor AR e câmera...');
@@ -104,10 +101,8 @@ async function iniciarAR() {
     await mindarThree.start();
     updateFeedback('5/5 - Sistema AR pronto! Procure o QR Code.', false);
     
-    // Esconde o container de feedback após o início bem-sucedido
     if (feedbackContainer) feedbackContainer.classList.add('hidden');
 
-    // --- Loop de Renderização ---
     renderer.setAnimationLoop(() => {
       renderer.render(scene, camera);
     });
@@ -115,15 +110,29 @@ async function iniciarAR() {
   } catch (error) {
     updateFeedback(`ERRO CRÍTICO: ${error.message}`, true);
     console.error("Falha ao iniciar AR:", error);
-    // Não esconda o feedback container se houver um erro crítico
     if (feedbackContainer) {
+        // Ensure the initial prompt is hidden if an error occurs after trying to start
+        if (initialPromptElements && !initialPromptElements.classList.contains('hidden')) {
+            initialPromptElements.classList.add('hidden');
+        }
+        feedbackContainer.classList.remove('hidden'); // Make sure feedback is visible
         const p = document.createElement('p');
         p.textContent = "Verifique o console (F12) para mais detalhes e se todos os arquivos (modelo, .mind) estão nos locais corretos.";
         p.style.fontSize = "0.8em";
+        p.style.marginTop = "10px";
         feedbackContainer.appendChild(p);
     }
   }
 }
 
-// Inicia a aplicação AR
-iniciarAR();
+// Adiciona o listener ao botão para iniciar a aplicação AR
+if (startButton) {
+  startButton.addEventListener('click', () => {
+    // Opcionalmente, desabilitar o botão para evitar múltiplos cliques
+    startButton.disabled = true;
+    startButton.textContent = "Iniciando...";
+    iniciarAR();
+  });
+} else {
+  updateFeedback('ERRO: Botão de início não encontrado.', true);
+}
