@@ -1,4 +1,9 @@
 /* eslint-disable no-console */
+
+import { MindARThree } from 'mind-ar-image-three';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+ 
 import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js';
 // Atenção: A versão 0.174.0 do Three.js não existe no CDN. Usando 0.165.0 que é uma versão estável recente.
 // Se precisar de uma versão específica, verifique a disponibilidade em https://www.jsdelivr.com/package/npm/three
