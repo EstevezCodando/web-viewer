@@ -2,15 +2,67 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>Carta Topográfica AR</title>
+  <title>Carta Topográfica AR com MindAR</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <style>
-    html,body{margin:0;height:100%;overflow:hidden;background:#000}
-    #carregando{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-family:sans-serif}
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000; /* Fundo preto enquanto carrega */
+      color: #fff; /* Cor do texto padrão */
+      font-family: Arial, sans-serif;
+    }
+    #feedback-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.85); /* Fundo semi-transparente */
+      z-index: 10000; /* Para ficar sobre a câmera até estar pronto */
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #feedback-container p {
+      margin: 10px 0;
+      font-size: 1.1em;
+    }
+    #feedback-container .error {
+      color: #ffdddd; /* Vermelho claro para erros */
+      font-weight: bold;
+    }
+    #feedback-container .success {
+      color: #ddffdd; /* Verde claro para sucesso */
+    }
+    /* Esconde o container de feedback quando a classe 'hidden' é adicionada */
+    #feedback-container.hidden {
+        display: none;
+    }
   </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/": "https://cdn.jsdelivr.net/npm/three@0.165.0/",
+      "mind-ar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
+    }
+  }
+  </script>
+
 </head>
 <body>
-  <div id="carregando">🔄 Carregando…</div>
+  <div id="feedback-container">
+    <p id="feedback-message">🔄 Carregando e iniciando a câmera...</p>
+    <p style="font-size: 0.8em;">Por favor, conceda permissão para usar a câmera, se solicitado.</p>
+  </div>
+
   <script type="module" src="main.js"></script>
 </body>
 </html>
