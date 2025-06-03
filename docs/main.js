@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-
 import { MindARThree } from 'mind-ar-image-three';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
