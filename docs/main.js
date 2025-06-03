@@ -30,7 +30,7 @@ async function iniciarAR() {
       // Você DEVE gerar este arquivo a partir da sua imagem de QR Code (ou outra imagem alvo)
       // usando o compilador online do MindAR: https://hiukim.github.io/mind-ar-js-doc/tools/compile
       // Coloque o arquivo 'qrcode.mind' (ou o nome que você der) na pasta 'assets'.
-      imageTargetSrc: './assets/targets.mind', // Ex: se o seu QR Code se chama 'qrcode.png', compile-o para 'qrcode.mind'
+      imageTargetSrc: './assets/qrcode.mind', // Ex: se o seu QR Code se chama 'qrcode.png', compile-o para 'qrcode.mind'
       maxTrack: 1, // Rastrear apenas 1 alvo por vez
       filterMinCF: 0.001, // Parâmetros para suavizar o rastreamento (ajuste conforme necessário)
       filterBeta: 0.01,
