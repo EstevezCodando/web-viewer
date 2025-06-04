@@ -11,8 +11,12 @@
     <!-- Marker for tracking -->
     <a-marker type="pattern" url="pattern-hiro.patt">
       <!-- Plane to display the image -->
+      <a-entity
+      gltf-model="https://estevezcodando.github.io/web-viewer/rubber_duck.glb"
+      scale="5 5 5"
+      position="150 300 -100"
+    ></a-entity>
        
-      <a-plane id="imagePlane" position="0 0 0" rotation="-90 0 0" width="4" height="2.25" material="shader: flat; scale: 2 2 2"></a-plane>
     </a-marker>
     <!-- Camera to view the scene -->
     <a-entity camera></a-entity>
