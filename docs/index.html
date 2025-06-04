@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Pinch Zoom AR</title>
+  <title>Pinch Zoom AR com Ancoragem</title>
 
   <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1.6.0/dist/aframe-master.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
@@ -25,21 +25,28 @@
   <div id="loading">Carregando modelo...</div>
 
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: true;">
-    <a-marker type="pattern" url="pattern-hiro.patt">
+    <a-marker id="marcador" type="pattern" url="pattern-hiro.patt">
       <a-entity
         id="modelo"
-        gltf-model="https://estevezcodando.github.io/web-viewer/rubber_duck.glb"
-        scale="1 1 1"
+        gltf-model="https://estevezcodando.github.io/web-viewer/scene.glb"
+        scale="0.01 0.01 0.01"
         position="0 0 0"
       ></a-entity>
     </a-marker>
+
     <a-entity camera></a-entity>
   </a-scene>
 
   <script>
     const modelo = document.querySelector('#modelo');
+    const marcador = document.querySelector('#marcador');
     const loading = document.querySelector('#loading');
 
+    let currentScale = 0.01;
+    let initialDistance = null;
+    let ancorado = false;
+
+    // Esconde o loading quando o modelo estiver carregado
     modelo.addEventListener('model-loaded', () => {
       loading.style.display = 'none';
     });
@@ -49,12 +56,36 @@
       loading.style.background = 'red';
     });
 
-    // Lógica para pinch-to-zoom
-    let initialDistance = null;
-    let currentScale = 0.01;
+    // Ancoragem ao detectar o marcador
+    marcador.addEventListener('markerFound', () => {
+      if (ancorado) return; // Evita duplicação
+      ancorado = true;
 
+      // Espera o AR.js posicionar corretamente antes de ancorar
+      setTimeout(() => {
+        const worldPos = modelo.object3D.getWorldPosition(new THREE.Vector3());
+        const worldRot = modelo.object3D.getWorldRotation(new THREE.Euler());
+
+        // Cria nova entidade fixa
+        const cena = document.querySelector('a-scene');
+        const fixo = document.createElement('a-entity');
+        fixo.setAttribute('gltf-model', modelo.getAttribute('gltf-model'));
+        fixo.setAttribute('position', `${worldPos.x} ${worldPos.y} ${worldPos.z}`);
+        fixo.setAttribute('rotation', `${THREE.Math.radToDeg(worldRot.x)} ${THREE.Math.radToDeg(worldRot.y)} ${THREE.Math.radToDeg(worldRot.z)}`);
+        fixo.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
+        fixo.setAttribute('id', 'modelo');
+
+        cena.appendChild(fixo);
+
+        // Remove o marcador e o modelo original
+        marcador.parentNode.removeChild(marcador);
+      }, 500); // tempo para estabilizar o tracking
+    });
+
+    // Lógica para pinch-to-zoom
     document.addEventListener('touchmove', function (e) {
-      if (e.touches.length === 2) {
+      const entidade = document.querySelector('#modelo');
+      if (e.touches.length === 2 && entidade) {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -65,17 +96,16 @@
           const scaleChange = distance / initialDistance;
           let newScale = currentScale * scaleChange;
 
-          // Limites de escala
           newScale = Math.max(0.005, Math.min(0.05, newScale));
-          modelo.setAttribute('scale', `${newScale} ${newScale} ${newScale}`);
+          entidade.setAttribute('scale', `${newScale} ${newScale} ${newScale}`);
         }
       }
     });
 
     document.addEventListener('touchend', function (e) {
-      if (e.touches.length < 2) {
-        const scale = modelo.getAttribute('scale').x;
-        currentScale = scale;
+      const entidade = document.querySelector('#modelo');
+      if (e.touches.length < 2 && entidade) {
+        currentScale = entidade.getAttribute('scale').x;
         initialDistance = null;
       }
     });
