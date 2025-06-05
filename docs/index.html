@@ -30,16 +30,13 @@
 <body style="margin: 0; overflow: hidden;">
     <div id="loading">Carregando modelo...</div>
 
-    <a-scene embedded arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: true;"
-        vr-mode-ui="enabled: false;" renderer="logarithmicDepthBuffer: true;">
-        <a-nft type="nft" url="https://estevezcodando.github.io/web-viewer/DSGLOGO_ARJS" smooth="true" smoothCount="10"
-            smoothTolerance=".01" smoothThreshold="5">
-            <a-entity id="modelo"
-                gltf-model="https://estevezcodando.github.io/web-viewer/carta_brasilia_corrigido_rotacionado.glb"
-                scale="0.01 0.01 0.01" position="0 0 0">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: true;">
+        <a-marker type="pattern" url="pattern-hiro.patt">
+            <a-entity id="modelo" gltf-model="https://estevezcodando.github.io/web-viewer/carta_brasilia_corrigido_rotacionado.glb" 
+                scale="1 1 1"
+                position="0 0 0">
             </a-entity>
-        </a-nft>
-
+        </a-marker>
         <a-entity camera></a-entity>
     </a-scene>
 
@@ -47,16 +44,18 @@
         const modelo = document.querySelector('#modelo');
         const loading = document.querySelector('#loading');
 
+        // Esconde o loading ao carregar o modelo
         modelo.addEventListener('model-loaded', () => {
             loading.style.display = 'none';
         });
 
+        // Exibe erro se o modelo não carregar
         modelo.addEventListener('model-error', () => {
             loading.innerText = 'Erro ao carregar modelo.';
             loading.style.background = 'red';
         });
 
-        // Pinch-to-zoom
+        // Lógica para pinch-to-zoom
         let initialDistance = null;
         let currentScale = 0.01;
 
@@ -71,7 +70,10 @@
                 } else {
                     const scaleChange = distance / initialDistance;
                     let newScale = currentScale * scaleChange;
+
+                    // Limites de escala
                     newScale = Math.max(0.005, Math.min(0.05, newScale));
+
                     modelo.setAttribute('scale', `${newScale} ${newScale} ${newScale}`);
                 }
             }
